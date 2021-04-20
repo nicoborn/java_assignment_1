@@ -19,7 +19,7 @@ public class AircraftModel {
 	public int numberBuilt;
  	public String nationalOrigin;
 	public String fact;
-	private Role role;
+	public String role;
 	
 	protected AircraftModel() {
 		manufacturer = "";
@@ -30,7 +30,7 @@ public class AircraftModel {
 		numberBuilt = 0;
 		nationalOrigin = "";
 		fact = "";
-		role = Role.NONE;
+		role = "";
 	}
 	
 	// Manufacturer
@@ -106,12 +106,12 @@ public class AircraftModel {
 	}
 	
 	// Role
-	public Role getRole() {
+	public String getRole() {
 	    return role;
 	}
 	
-	public void setRole(Role role) {
-		this.role = role;
+	public void setRole(String role) {
+		this.role = Enum.valueOf(Role.class, role).toString();
 	}
    
 }

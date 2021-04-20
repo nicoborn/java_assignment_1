@@ -35,6 +35,7 @@ public class AircraftView {
 	protected Button btnBottomAdd;
 	protected Button btnBottomDelete;
 	protected Button btnBottomLoadFile;
+	protected Button btnBottomEditEntry;
 
 	protected AircraftView(Stage stage, AircraftModel model) {
 		this.stage = stage;
@@ -53,9 +54,6 @@ public class AircraftView {
       
 		// LEFT
 		listViewLeft = new ListView();
-		listViewLeft.getItems().add("Item 1");
-		listViewLeft.getItems().add("Item 2");
-		listViewLeft.getItems().add("Item 3");
       
 		root.setLeft(listViewLeft);
 		BorderPane.setMargin(listViewLeft, new Insets(10, 10, 10, 10));
@@ -119,7 +117,6 @@ public class AircraftView {
   		Label labelRole = new Label("Role");
   		gridPane.add(labelRole, 0, 9);
   		comboBoxRole = new ComboBox();
-  		comboBoxRole.getItems().add("Choice 1                            ");
   		gridPane.add(comboBoxRole, 1, 9);
   
   		// Save Button
@@ -138,17 +135,22 @@ public class AircraftView {
   		// Button +
   		btnBottomAdd = new Button(" + ");
   		btnBottomAdd.setPadding(new Insets(5, 5, 5, 5));
-  		gridPaneButtonsBottom.add(btnBottomAdd, 0, 0);
+  		gridPaneButtonsBottom.add(btnBottomAdd, 3, 0);
+  		
+  		// Button Load
+  		btnBottomEditEntry = new Button("Edit selected");
+  		btnBottomEditEntry.setPadding(new Insets(5, 5, 5, 5));
+  		gridPaneButtonsBottom.add(btnBottomEditEntry, 1, 0);
   
   		// Button -
   		btnBottomDelete = new Button(" - ");
   		btnBottomDelete.setPadding(new Insets(5, 5, 5, 5));
-  		gridPaneButtonsBottom.add(btnBottomDelete, 1, 0);
+  		gridPaneButtonsBottom.add(btnBottomDelete, 4, 0);
   
   		// Button Load
-  		btnBottomLoadFile = new Button("Load data file");
+  		btnBottomLoadFile = new Button("Load data");
   		btnBottomLoadFile.setPadding(new Insets(5, 5, 5, 5));
-  		gridPaneButtonsBottom.add(btnBottomLoadFile, 2, 0);
+  		gridPaneButtonsBottom.add(btnBottomLoadFile, 0, 0);
       
   		// Align center
   		root.setBottom(gridPaneButtonsBottom);
