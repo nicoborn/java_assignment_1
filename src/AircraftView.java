@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 
 public class AircraftView {
     private final AircraftModel model;
-    private Stage stage;
+    protected Stage stage;
 
 	protected ListView listViewLeft;
 	protected TextField textManufacturer;
@@ -31,7 +31,8 @@ public class AircraftView {
 	protected ComboBox comboBoxNationalOrigin;
 	protected TextField textRandomFact;
 	protected ComboBox comboBoxRole;
-	protected Button btnSave;
+	protected Button btnSaveEdit;
+	protected Button btnSaveAdd;
 	protected Button btnBottomAdd;
 	protected Button btnBottomDelete;
 	protected Button btnBottomLoadFile;
@@ -119,9 +120,15 @@ public class AircraftView {
   		comboBoxRole = new ComboBox();
   		gridPane.add(comboBoxRole, 1, 9);
   
-  		// Save Button
-  		btnSave = new Button("Save");
-  		gridPane.add(btnSave, 1, 10);
+  		// Save Button Edit
+  		btnSaveEdit = new Button("Save");
+  		btnSaveEdit.setVisible(false);
+  		gridPane.add(btnSaveEdit, 1, 10);
+  		
+  		// Save Button Add
+  		btnSaveAdd = new Button("Add");
+  		btnSaveAdd.setVisible(false);
+  		gridPane.add(btnSaveAdd, 1, 10);
   
   		// Alignment
   		BorderPane.setMargin(gridPane, new Insets(10, 10, 10, 10));

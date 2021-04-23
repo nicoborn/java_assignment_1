@@ -1,6 +1,10 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -9,11 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 import javafx.scene.control.Alert.AlertType;
 
 public class AircraftController {
@@ -28,6 +34,7 @@ public class AircraftController {
 	private final AircraftModel model;
 	private final AircraftView view;
 	private ArrayList<AircraftModel> aircrafts;
+	private File file = new File(System.getProperty("user.dir") + "\\aircraft.data");
 
 	protected AircraftController(AircraftModel model, AircraftView view) {
 		this.model = model;
@@ -147,6 +154,13 @@ public class AircraftController {
 		
 		// Load values into edit forms
 		view.btnBottomEditEntry.setOnAction((event) -> {
+			
+			// Check if aircraft is selected
+			if(view.listViewLeft.getSelectionModel().getSelectedItem() == null) {
+				Alert alert = new Alert(AlertType.ERROR, "No aircraft selected, please select an aircraft first", ButtonType.OK);
+				alert.showAndWait();
+				return;
+			}
 			String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
 			String[] aircraft = entry.split(" - ");
 			
@@ -162,35 +176,168 @@ public class AircraftController {
 		        	 view.textRandomFact.setText(element.getFact());
 		        	 view.comboBoxRole.setValue(element.getRole());
 		         }
-		      }
-			
+		     }
+			view.btnSaveEdit.setVisible(true);
+       	 	view.btnSaveAdd.setVisible(false);
 		});
 		
 		
-		/////////////////////
-		// Misc functions ///
-		/////////////////////
+		// Add new entry
+		view.btnBottomAdd.setOnAction((event) -> {
+			// Clean input fields
+			view.textManufacturer.setText("");
+       	 	view.textModel.setText("");
+       	 	view.textDescription.setText("");
+       	 	view.textIntroYear.setText("");
+       	 	view.comboBoxNationalOrigin.setValue(null);
+       	 	view.datepickerFirstFlight.setValue(null);
+       	 	view.textNumberBuilt.setText("");
+       	 	view.textRandomFact.setText("");
+       	 	view.comboBoxRole.setValue(null);
+       	 	view.btnSaveEdit.setVisible(false);
+       	 	view.btnSaveAdd.setVisible(true);
+		});
 		
-		// Add countries to combobox
-		String[] countries = Locale.getISOCountries();
-		for (String countrylist : countries) {
-			  Locale obj = new Locale("", countrylist);
-			  String[] city = { obj.getDisplayCountry() };
-			  for (int x = 0; x < city.length; x++) {
-				  view.comboBoxNationalOrigin.getItems().add(obj.getDisplayCountry(Locale.US));
-			  }
-		}
+		// Save aircraft
+		view.btnSaveAdd.setOnAction((event) -> {
+			BufferedWriter output;
+			try {
+				output = new BufferedWriter(new FileWriter(file.getPath(), true));
+				// TODO check if input is valid
+				
+				// Create Aircraft object
+				AircraftModel addAircraft = new AircraftModel();
+				addAircraft.setManufacturer(view.textManufacturer.getText());
+				addAircraft.setModel(view.textModel.getText());
+				addAircraft.setDescription(view.textDescription.getText());
+				addAircraft.setIntroductionYear(Integer.parseInt(view.textIntroYear.getText()));
+				
+				
+				addAircraft.setNumberBuilt(Integer.parseInt(view.textNumberBuilt.getText()));
+				addAircraft.setNationalOrigin(view.comboBoxNationalOrigin.getValue().toString());
+				addAircraft.setFact(view.textRandomFact.getText());
+				addAircraft.setRole(view.comboBoxRole.getValue().toString());
+				
+				output.append(System.getProperty("line.separator") + addAircraft.getManufacturer() + "|" + addAircraft.getModel() + "|" + addAircraft.getDescription() + "|" + addAircraft.getIntroductionYear() + "|" + addAircraft.getFirstFlight() + "|" + addAircraft.getNumberBuilt() + "|" + addAircraft.getNationalOrigin() + "|" + addAircraft.getFact() + "|" + addAircraft.getRole());
+				output.close();
+				
+				// Refresh list
+				loadData();
+			} catch (Exception e) {
+		    	System.out.println(e.toString());
+			}
+			
+		});
 		
-		// Add roles to combobox
-		for (Role role : Role.values()) { 
-			view.comboBoxRole.getItems().add(role);
-		}
+		// Delete Aircraft
+		view.btnBottomDelete.setOnAction((event) -> {
+			
+			// Check if aircraft is selected
+			if(view.listViewLeft.getSelectionModel().getSelectedItem() == null) {
+				Alert alert = new Alert(AlertType.ERROR, "No aircraft selected, please select an aircraft first", ButtonType.OK);
+				alert.showAndWait();
+				return;
+			}
+			String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
+			String[] aircraft = entry.split(" - ");
+			
+			// Check if user wants to delete the aircraft
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("Caution");
+			alert.setHeaderText("Deleting an aircraft");
+			alert.setContentText("Do you really want to delete this aircraft?");
+
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.get() == ButtonType.OK){
+				// Delete aircraft
+				try {
+					BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
+					File temp = new File(System.getProperty("user.dir") + "\\temp.txt");
+				    BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+				    
+					String currentLine;
+					while((currentLine = reader.readLine()) != null){
+				        String trimmedLine = currentLine.trim();
+				        System.out.println((aircraft[0] + "|" + aircraft[1]));
+				        if(!trimmedLine.startsWith(aircraft[0] + "|" + aircraft[1])){
+				        	writer.write(currentLine + System.getProperty("line.separator"));
+				        	System.out.println("line found and deleted");
+				        }
+				    }
+					
+					writer.close();
+					reader.close();
+				    boolean delete = file.delete();
+				    boolean b = temp.renameTo(file);
+				    if(b == true)
+				    {
+				    	Alert alertSuccess = new Alert(AlertType.INFORMATION, "Aircraft deleted successful", ButtonType.OK);
+				    	alertSuccess.showAndWait();
+				    }
+				    else {
+				    	Alert alertSuccess = new Alert(AlertType.ERROR, "Error! Aircraft not deleted.", ButtonType.OK);
+				    	alertSuccess.showAndWait();
+				    }
+				    System.out.println(temp.getPath());
+				    
+				    loadData();
+					
+			    } catch (Exception e) {
+			    	System.out.println(e.getMessage());
+				}
+			} else {
+				// Abord delete of aircraft
+			    return;
+			}
+		});
+		
+		
+		
+		// Load data on start
+		view.stage.setOnShowing( event -> {
+			getCountries();
+			getRoles();
+			loadData();
+		});
+		
+		
+		// Save data on close
+		view.stage.setOnCloseRequest( event -> {
+			
+			System.out.println("Closing Stage");
+		});
+		
+		// Format datePicker First flight
+		view.datepickerFirstFlight.setConverter(new StringConverter<LocalDate>()
+		{
+		    private DateTimeFormatter dateTimeFormatter=DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+		    @Override
+		    public String toString(LocalDate localDate)
+		    {
+		        if(localDate==null)
+		            return "";
+		        return dateTimeFormatter.format(localDate);
+		    }
+
+		    @Override
+		    public LocalDate fromString(String dateString)
+		    {
+		        if(dateString==null || dateString.trim().isEmpty())
+		        {
+		            return null;
+		        }
+		        return LocalDate.parse(dateString,dateTimeFormatter);
+		    }
+		});
+		
 	}
 	
-	// Load data
+	// Load aircraft data into listView
 	protected void loadData()
 	{
 		readFile();
+		view.listViewLeft.getItems().clear();
 		for(AircraftModel aircraft: aircrafts)
 		{
 			view.listViewLeft.getItems().add(aircraft.getManufacturer() + " - " + aircraft.getModel());
@@ -200,14 +347,6 @@ public class AircraftController {
 	
 	// Load aircrafts from file
 	protected void readFile(){
-		
-		// Open file chooser
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open Resource File");
-		fileChooser.setInitialDirectory(
-	            new File(System.getProperty("user.dir"))
-	        ); 
-		File file = fileChooser.showOpenDialog(view.getStage());
 		
 		// Read file
         if (file != null) {
@@ -223,7 +362,6 @@ public class AircraftController {
     	        while ((text = bufferedReader.readLine()) != null) {
     	            stringBuffer.append(text + "\n");
     	            
-
     	            System.out.println(text);
     	            String[] arrOfStr = text.split("\\|");
     	            
@@ -250,9 +388,37 @@ public class AircraftController {
         }
 	}
 	
-	public LocalDate convertToLocalDate(Date dateToConvert) {
+	// Convert to LocalDate for DatePicker
+	protected LocalDate convertToLocalDate(Date dateToConvert) {
 	    return dateToConvert.toInstant()
 	      .atZone(ZoneId.systemDefault())
 	      .toLocalDate();
+	}
+	
+	// Convert from LocalDate to Date
+	public Date convertToDate(LocalDate dateToConvert) {
+	    return java.sql.Date.valueOf(dateToConvert);
+	}
+	
+	
+	
+	// Fill countries into comboBox
+	protected void getCountries() {
+		// Add countries to combobox
+		String[] countries = Locale.getISOCountries();
+		for (String countrylist : countries) {
+			  Locale obj = new Locale("", countrylist);
+			  String[] city = { obj.getDisplayCountry() };
+			  for (int x = 0; x < city.length; x++) {
+				  view.comboBoxNationalOrigin.getItems().add(obj.getDisplayCountry(Locale.US));
+			  }
+		}
+	}
+	
+	// Fill enum roles into comboBox
+	protected void getRoles() {
+		for (Role role : Role.values()) { 
+			view.comboBoxRole.getItems().add(role);
+		}
 	}
 }
