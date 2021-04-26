@@ -6,6 +6,10 @@ Date: 26 April 2021
 Aircraft manager is a java tool that lets you add / edit / delete aircrafts.
 At the first start a sample fie "aircraft.data" will be created with an example aircraft in it.
 
+# Special remarks
+Instead of saving the data of the aircrafts at the time the program closes, we have decided to solve this by user input (button click for add, edit, and so on).
+This allows for real time data verification.
+
 # How to use?
 Show aircraft
 By clicking on an aircraft in the list, the information will appear in the form on the left.
