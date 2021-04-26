@@ -11,7 +11,9 @@ Instead of saving the data of the aircrafts at the time the program closes, we h
 This allows for real time data verification.
 
 # How to use?
-Show aircraft
+At the program start, the application searches for a aircraft.data in the startup folder. If there is no file, a file with one sample aircraft is created.
+
+## Show aircraft
 By clicking on an aircraft in the list, the information will appear in the form on the left.
 You can also iterate through the list by the arrow keys (up/down).
 
