@@ -17,9 +17,13 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 
+import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.scene.control.Alert.AlertType;
@@ -263,7 +267,6 @@ public class AircraftController {
 				String currentLine;
 				while((currentLine = reader.readLine()) != null){
 			        String trimmedLine = currentLine.trim();
-			        System.out.println((aircraft[0] + "|" + aircraft[1]));
 			        if(trimmedLine.startsWith(aircraft[0] + "|" + aircraft[1])){
 			        	// Edit line found
 			        	// Create Aircraft object
@@ -283,7 +286,6 @@ public class AircraftController {
 						editAircraft.setRole(view.comboBoxRole.getValue().toString());
 						
 			        	writer.write(editAircraft.getManufacturer() + "|" + editAircraft.getModel() + "|" + editAircraft.getDescription() + "|" + editAircraft.getIntroductionYear() + "|" + formattedValue + "|" + editAircraft.getNumberBuilt() + "|" + editAircraft.getNationalOrigin() + "|" + editAircraft.getFact() + "|" + editAircraft.getRole() + System.getProperty("line.separator"));
-			        	System.out.println("line found and edited");
 			        } else {
 			        	// Line not to be edited
 			        	writer.write(currentLine + System.getProperty("line.separator"));
@@ -343,10 +345,8 @@ public class AircraftController {
 					String currentLine;
 					while((currentLine = reader.readLine()) != null){
 				        String trimmedLine = currentLine.trim();
-				        System.out.println((aircraft[0] + "|" + aircraft[1]));
 				        if(!trimmedLine.startsWith(aircraft[0] + "|" + aircraft[1])){
 				        	writer.write(currentLine + System.getProperty("line.separator"));
-				        	System.out.println("line found and deleted");
 				        }
 				    }
 					
@@ -372,7 +372,53 @@ public class AircraftController {
 			}
 		});
 		
+		// Load aircraft on click
+		view.listViewLeft.setOnMouseClicked(new EventHandler<MouseEvent>() {
+	        @Override
+	        public void handle(MouseEvent event) {
+	        	String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
+				String[] aircraft = entry.split(" - ");
+				
+				for (AircraftModel element : aircrafts){
+			         if (element.getManufacturer().contains(aircraft[0]) && element.getModel().contains(aircraft[1])){
+			        	 view.textManufacturer.setText(element.getManufacturer());
+			        	 view.textModel.setText(element.getModel());
+			        	 view.textDescription.setText(element.getDescription());
+			        	 view.textIntroYear.setText(String.valueOf(element.getIntroductionYear()));
+			        	 view.comboBoxNationalOrigin.setValue(element.getNationalOrigin());
+			        	 view.datepickerFirstFlight.setValue(convertToLocalDate(element.getFirstFlight()));
+			        	 view.textNumberBuilt.setText(String.valueOf(element.getNumberBuilt()));
+			        	 view.textRandomFact.setText(element.getFact());
+			        	 view.comboBoxRole.setValue(element.getRole());
+			         }
+			     }
+	        }
+	    });
 		
+		// Load aircraft on key down or up
+		view.listViewLeft.setOnKeyReleased(new EventHandler<KeyEvent>() {
+	        @Override
+	        public void handle(KeyEvent event) {
+	        	if(event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) {
+		        	String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
+					String[] aircraft = entry.split(" - ");
+					
+					for (AircraftModel element : aircrafts){
+				         if (element.getManufacturer().contains(aircraft[0]) && element.getModel().contains(aircraft[1])){
+				        	 view.textManufacturer.setText(element.getManufacturer());
+				        	 view.textModel.setText(element.getModel());
+				        	 view.textDescription.setText(element.getDescription());
+				        	 view.textIntroYear.setText(String.valueOf(element.getIntroductionYear()));
+				        	 view.comboBoxNationalOrigin.setValue(element.getNationalOrigin());
+				        	 view.datepickerFirstFlight.setValue(convertToLocalDate(element.getFirstFlight()));
+				        	 view.textNumberBuilt.setText(String.valueOf(element.getNumberBuilt()));
+				        	 view.textRandomFact.setText(element.getFact());
+				        	 view.comboBoxRole.setValue(element.getRole());
+				         }
+				    }
+	        	}
+	        }
+	    });
 		
 		// Load data on start
 		view.stage.setOnShowing( event -> {
@@ -399,7 +445,6 @@ public class AircraftController {
 		for(AircraftModel aircraft: aircrafts)
 		{
 			view.listViewLeft.getItems().add(aircraft.getManufacturer() + " - " + aircraft.getModel());
-		    System.out.println();
 		}
 	}
 	
@@ -408,7 +453,25 @@ public class AircraftController {
 		
 		// Read file
         if (file != null) {
-        	aircrafts = new ArrayList<AircraftModel>();
+        	
+        	// Create file if not existing
+        	if(!file.exists()) {
+        		try {
+        			// Create example entry
+					BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+					writer.write("Boeing|747|Large, long–range wide-body airliner and cargo aircraft|1970|09.02.1969|1562|United States|The Boeing 747, is a low-wing airliner powered by four turbofans, with a distinctive raised forward passenger deck and cockpit.|AIRLINER");
+					writer.close();
+					
+					// Show information
+					Alert alertSuccess = new Alert(AlertType.INFORMATION, "File aircraft.data has been created. Example aircraft was added.", ButtonType.OK);
+			    	alertSuccess.showAndWait();
+			    	
+				} catch (IOException e) {
+					Alert alert = new Alert(AlertType.ERROR, e.getMessage() + "File path: " + file.getPath(), ButtonType.OK);
+	    	    	alert.show();
+				}
+        	}
+    		aircrafts = new ArrayList<AircraftModel>();
     		
     	    StringBuilder stringBuffer = new StringBuilder();
     	    BufferedReader bufferedReader = null;
@@ -457,8 +520,8 @@ public class AircraftController {
    	 	view.textNumberBuilt.setDisable(true);
    	 	view.textRandomFact.setDisable(true);
    	 	view.comboBoxRole.setDisable(true);
-   	 	view.btnSaveAdd.setDisable(true);
-   	 	view.btnSaveEdit.setDisable(true);
+   	 	view.btnSaveEdit.setVisible(false);
+   	 	view.btnSaveAdd.setVisible(false);
 	}
 	
 	// Enable entry fields
@@ -487,8 +550,6 @@ public class AircraftController {
 	public Date convertToDate(LocalDate dateToConvert) {
 	    return java.sql.Date.valueOf(dateToConvert);
 	}
-	
-	
 	
 	// Fill countries into comboBox
 	protected void getCountries() {
