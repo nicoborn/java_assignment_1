@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -154,6 +156,7 @@ public class AircraftController {
 		
 		// Load values into edit forms
 		view.btnBottomEditEntry.setOnAction((event) -> {
+			enableInput();
 			
 			// Check if aircraft is selected
 			if(view.listViewLeft.getSelectionModel().getSelectedItem() == null) {
@@ -184,6 +187,10 @@ public class AircraftController {
 		
 		// Add new entry
 		view.btnBottomAdd.setOnAction((event) -> {
+			// Activate entry fields
+			enableInput();
+			
+			
 			// Clean input fields
 			view.textManufacturer.setText("");
        	 	view.textModel.setText("");
@@ -223,11 +230,86 @@ public class AircraftController {
 				
 				output.append(System.getProperty("line.separator") + addAircraft.getManufacturer() + "|" + addAircraft.getModel() + "|" + addAircraft.getDescription() + "|" + addAircraft.getIntroductionYear() + "|" + formattedValue + "|" + addAircraft.getNumberBuilt() + "|" + addAircraft.getNationalOrigin() + "|" + addAircraft.getFact() + "|" + addAircraft.getRole());
 				output.close();
+			} catch (Exception e) {
+		    	System.out.println(e.toString());
+			} finally {
+				// Disable entry fields again
+				disableInput();
 				
 				// Refresh list
 				loadData();
-			} catch (Exception e) {
-		    	System.out.println(e.toString());
+			}
+			
+		});
+		
+		// Edit aircraft
+		view.btnSaveEdit.setOnAction((event) -> {
+			BufferedWriter output;
+			try {
+				// Check if aircraft is selected
+				if(view.listViewLeft.getSelectionModel().getSelectedItem() == null) {
+					Alert alert = new Alert(AlertType.ERROR, "No aircraft selected, please select an aircraft first", ButtonType.OK);
+					alert.showAndWait();
+					return;
+				}
+				
+				String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
+				String[] aircraft = entry.split(" - ");
+				
+				BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
+				File temp = new File(System.getProperty("user.dir") + "\\temp.txt");
+			    BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+			    
+				String currentLine;
+				while((currentLine = reader.readLine()) != null){
+			        String trimmedLine = currentLine.trim();
+			        System.out.println((aircraft[0] + "|" + aircraft[1]));
+			        if(trimmedLine.startsWith(aircraft[0] + "|" + aircraft[1])){
+			        	// Edit line found
+			        	// Create Aircraft object
+						AircraftModel editAircraft = new AircraftModel();
+						editAircraft.setManufacturer(view.textManufacturer.getText());
+						editAircraft.setModel(view.textModel.getText());
+						editAircraft.setDescription(view.textDescription.getText());
+						editAircraft.setIntroductionYear(Integer.parseInt(view.textIntroYear.getText()));
+						
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy",Locale.GERMAN);
+						editAircraft.setFirstFlight(convertToDate(view.datepickerFirstFlight.getValue()));
+						String formattedValue = (view.datepickerFirstFlight.getValue()).format(formatter);
+						
+						editAircraft.setNumberBuilt(Integer.parseInt(view.textNumberBuilt.getText()));
+						editAircraft.setNationalOrigin(view.comboBoxNationalOrigin.getValue().toString());
+						editAircraft.setFact(view.textRandomFact.getText());
+						editAircraft.setRole(view.comboBoxRole.getValue().toString());
+						
+			        	writer.write(editAircraft.getManufacturer() + "|" + editAircraft.getModel() + "|" + editAircraft.getDescription() + "|" + editAircraft.getIntroductionYear() + "|" + formattedValue + "|" + editAircraft.getNumberBuilt() + "|" + editAircraft.getNationalOrigin() + "|" + editAircraft.getFact() + "|" + editAircraft.getRole() + System.getProperty("line.separator"));
+			        	System.out.println("line found and edited");
+			        } else {
+			        	// Line not to be edited
+			        	writer.write(currentLine + System.getProperty("line.separator"));
+			        }
+			    }
+				
+				// Close writer and reader
+				writer.close();
+				reader.close();
+				
+				// move temp file to original
+				Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				
+		    	Alert alertSuccess = new Alert(AlertType.INFORMATION, "Aircraft edited successfully", ButtonType.OK);
+		    	alertSuccess.showAndWait();
+			    
+			    
+			    
+		    } catch (Exception e) {
+		    	System.out.println(e.getMessage());
+			} finally {
+				// Disable entry fields again
+				disableInput();
+				
+				// Reload data
+			    loadData();
 			}
 			
 		});
@@ -245,7 +327,7 @@ public class AircraftController {
 			String[] aircraft = entry.split(" - ");
 			
 			// Check if user wants to delete the aircraft
-			Alert alert = new Alert(AlertType.WARNING);
+			Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setTitle("Caution");
 			alert.setHeaderText("Deleting an aircraft");
 			alert.setContentText("Do you really want to delete this aircraft?");
@@ -268,25 +350,21 @@ public class AircraftController {
 				        }
 				    }
 					
+					// Close writer and reader
 					writer.close();
 					reader.close();
-				    boolean delete = file.delete();
-				    boolean b = temp.renameTo(file);
-				    if(b == true)
-				    {
-				    	Alert alertSuccess = new Alert(AlertType.INFORMATION, "Aircraft deleted successful", ButtonType.OK);
-				    	alertSuccess.showAndWait();
-				    }
-				    else {
-				    	Alert alertSuccess = new Alert(AlertType.ERROR, "Error! Aircraft not deleted.", ButtonType.OK);
-				    	alertSuccess.showAndWait();
-				    }
-				    System.out.println(temp.getPath());
-				    
-				    loadData();
+					
+					// move temp file to original
+					Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					
+				    Alert alertSuccess = new Alert(AlertType.INFORMATION, "Aircraft deleted successful", ButtonType.OK);
+				    alertSuccess.showAndWait();
 					
 			    } catch (Exception e) {
 			    	System.out.println(e.getMessage());
+				} finally {
+					// Reload data
+				    loadData();
 				}
 			} else {
 				// Abord delete of aircraft
@@ -298,6 +376,7 @@ public class AircraftController {
 		
 		// Load data on start
 		view.stage.setOnShowing( event -> {
+			disableInput();
 			getCountries();
 			getRoles();
 			loadData();
@@ -339,9 +418,8 @@ public class AircraftController {
     	        
     	        String text;
     	        while ((text = bufferedReader.readLine()) != null) {
+    	        	// Split data
     	            stringBuffer.append(text + "\n");
-    	            
-    	            System.out.println(text);
     	            String[] arrOfStr = text.split("\\|");
     	            
     	            // Create aircraft object
@@ -359,12 +437,43 @@ public class AircraftController {
     	            // Add aircraft object to array list
     	            aircrafts.add(aircraft);
     	        }
+    	        bufferedReader.close();
     	    } 
     	    catch (Exception ex) {
     	    	Alert alert = new Alert(AlertType.ERROR, ex.getMessage() + "File path: " + file.getPath(), ButtonType.OK);
     	    	alert.show();
     	    }
         }
+	}
+	
+	// Disable entry fields
+	protected void disableInput() {
+		view.textManufacturer.setDisable(true);
+   	 	view.textModel.setDisable(true);
+   	 	view.textDescription.setDisable(true);
+   	 	view.textIntroYear.setDisable(true);
+   	 	view.comboBoxNationalOrigin.setDisable(true);
+   	 	view.datepickerFirstFlight.setDisable(true);
+   	 	view.textNumberBuilt.setDisable(true);
+   	 	view.textRandomFact.setDisable(true);
+   	 	view.comboBoxRole.setDisable(true);
+   	 	view.btnSaveAdd.setDisable(true);
+   	 	view.btnSaveEdit.setDisable(true);
+	}
+	
+	// Enable entry fields
+	protected void enableInput() {
+		view.textManufacturer.setDisable(false);
+   	 	view.textModel.setDisable(false);
+   	 	view.textDescription.setDisable(false);
+   	 	view.textIntroYear.setDisable(false);
+   	 	view.comboBoxNationalOrigin.setDisable(false);
+   	 	view.datepickerFirstFlight.setDisable(false);
+   	 	view.textNumberBuilt.setDisable(false);
+   	 	view.textRandomFact.setDisable(false);
+   	 	view.comboBoxRole.setDisable(false);
+   	 	view.btnSaveAdd.setDisable(false);
+	 	view.btnSaveEdit.setDisable(false);
 	}
 	
 	// Convert to LocalDate for DatePicker
