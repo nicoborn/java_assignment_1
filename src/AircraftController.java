@@ -212,13 +212,16 @@ public class AircraftController {
 				addAircraft.setDescription(view.textDescription.getText());
 				addAircraft.setIntroductionYear(Integer.parseInt(view.textIntroYear.getText()));
 				
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy",Locale.GERMAN);
+				addAircraft.setFirstFlight(convertToDate(view.datepickerFirstFlight.getValue()));
+				String formattedValue = (view.datepickerFirstFlight.getValue()).format(formatter);
 				
 				addAircraft.setNumberBuilt(Integer.parseInt(view.textNumberBuilt.getText()));
 				addAircraft.setNationalOrigin(view.comboBoxNationalOrigin.getValue().toString());
 				addAircraft.setFact(view.textRandomFact.getText());
 				addAircraft.setRole(view.comboBoxRole.getValue().toString());
 				
-				output.append(System.getProperty("line.separator") + addAircraft.getManufacturer() + "|" + addAircraft.getModel() + "|" + addAircraft.getDescription() + "|" + addAircraft.getIntroductionYear() + "|" + addAircraft.getFirstFlight() + "|" + addAircraft.getNumberBuilt() + "|" + addAircraft.getNationalOrigin() + "|" + addAircraft.getFact() + "|" + addAircraft.getRole());
+				output.append(System.getProperty("line.separator") + addAircraft.getManufacturer() + "|" + addAircraft.getModel() + "|" + addAircraft.getDescription() + "|" + addAircraft.getIntroductionYear() + "|" + formattedValue + "|" + addAircraft.getNumberBuilt() + "|" + addAircraft.getNationalOrigin() + "|" + addAircraft.getFact() + "|" + addAircraft.getRole());
 				output.close();
 				
 				// Refresh list
@@ -305,30 +308,6 @@ public class AircraftController {
 		view.stage.setOnCloseRequest( event -> {
 			
 			System.out.println("Closing Stage");
-		});
-		
-		// Format datePicker First flight
-		view.datepickerFirstFlight.setConverter(new StringConverter<LocalDate>()
-		{
-		    private DateTimeFormatter dateTimeFormatter=DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-		    @Override
-		    public String toString(LocalDate localDate)
-		    {
-		        if(localDate==null)
-		            return "";
-		        return dateTimeFormatter.format(localDate);
-		    }
-
-		    @Override
-		    public LocalDate fromString(String dateString)
-		    {
-		        if(dateString==null || dateString.trim().isEmpty())
-		        {
-		            return null;
-		        }
-		        return LocalDate.parse(dateString,dateTimeFormatter);
-		    }
 		});
 		
 	}
