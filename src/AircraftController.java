@@ -43,12 +43,13 @@ public class AircraftController {
 	private File file = new File(System.getProperty("user.dir") + "\\aircraft.data");
 
 	protected AircraftController(AircraftModel model, AircraftView view) {
+		
+		/////////////////////////////////////////////////////////////
+		// Software engineering assignment 1 - N.Born / M.Marchese //
+		/////////////////////////////////////////////////////////////
+		
 		this.model = model;
 		this.view = view;
-		
-		////////////////////////////////////////////////////////
-		// Perform live checks while user is typing in values //
-		////////////////////////////////////////////////////////
 		
 		// Check manufacturer
 		view.textManufacturer.setOnKeyReleased(e -> {
