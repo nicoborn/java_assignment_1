@@ -23,7 +23,7 @@ The entry form will now be available to you and you can add an aircraft. After f
 
 ## Edit aircraft
 If you want to edit an aircraft click on an entry in the list and click "Edit selected"
-The form will now be available to change data. After editing please click the "Save" button below the form.
+The form will now be available to change data. After editing or to exit the edit view, please click the "Save" button below the form.
 
 ## Delete aircraft
 If you want to delete an aircraft click on an entry in the list and click the "-" button below the list of aircrafts.
