@@ -39,20 +39,12 @@ public class AircraftController {
 	
 	private final AircraftModel model;
 	private final AircraftView view;
-	private ArrayList<AircraftModel> aircrafts;
+	private AircraftModel aircrafts_all = new AircraftModel();
 	private File file = new File(System.getProperty("user.dir") + "\\aircraft.data");
 
 	protected AircraftController(AircraftModel model, AircraftView view) {
 		this.model = model;
 		this.view = view;
-
-		// register ourselves to listen for button clicks
-		//view.btnClick.setOnAction((event) -> {
-			//model.incrementValue();
-			//String newText = Integer.toString(model.getValue());
-			//view.lblNumber.setText(newText);
-		//});
-		
 		
 		////////////////////////////////////////////////////////
 		// Perform live checks while user is typing in values //
@@ -171,7 +163,7 @@ public class AircraftController {
 			String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
 			String[] aircraft = entry.split(" - ");
 			
-			for (AircraftModel element : aircrafts){
+			for (AircraftModel element : aircrafts_all.getAircrafts()){
 		         if (element.getManufacturer().contains(aircraft[0]) && element.getModel().contains(aircraft[1])){
 		        	 view.textManufacturer.setText(element.getManufacturer());
 		        	 view.textModel.setText(element.getModel());
@@ -379,7 +371,7 @@ public class AircraftController {
 	        	String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
 				String[] aircraft = entry.split(" - ");
 				
-				for (AircraftModel element : aircrafts){
+				for (AircraftModel element : aircrafts_all.getAircrafts()){
 			         if (element.getManufacturer().contains(aircraft[0]) && element.getModel().contains(aircraft[1])){
 			        	 view.textManufacturer.setText(element.getManufacturer());
 			        	 view.textModel.setText(element.getModel());
@@ -403,7 +395,7 @@ public class AircraftController {
 		        	String entry = view.listViewLeft.getSelectionModel().getSelectedItem().toString();
 					String[] aircraft = entry.split(" - ");
 					
-					for (AircraftModel element : aircrafts){
+					for (AircraftModel element : aircrafts_all.getAircrafts()){
 				         if (element.getManufacturer().contains(aircraft[0]) && element.getModel().contains(aircraft[1])){
 				        	 view.textManufacturer.setText(element.getManufacturer());
 				        	 view.textModel.setText(element.getModel());
@@ -442,7 +434,7 @@ public class AircraftController {
 	{
 		readFile();
 		view.listViewLeft.getItems().clear();
-		for(AircraftModel aircraft: aircrafts)
+		for(AircraftModel aircraft: aircrafts_all.getAircrafts())
 		{
 			view.listViewLeft.getItems().add(aircraft.getManufacturer() + " - " + aircraft.getModel());
 		}
@@ -471,7 +463,7 @@ public class AircraftController {
 	    	    	alert.show();
 				}
         	}
-    		aircrafts = new ArrayList<AircraftModel>();
+        	ArrayList<AircraftModel> aircrafts = new ArrayList<AircraftModel>();
     		
     	    StringBuilder stringBuffer = new StringBuilder();
     	    BufferedReader bufferedReader = null;
@@ -501,6 +493,8 @@ public class AircraftController {
     	            aircrafts.add(aircraft);
     	        }
     	        bufferedReader.close();
+    	        
+    	        aircrafts_all.setAircrafts(aircrafts);
     	    } 
     	    catch (Exception ex) {
     	    	Alert alert = new Alert(AlertType.ERROR, ex.getMessage() + "File path: " + file.getPath(), ButtonType.OK);

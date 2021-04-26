@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Date;
 
 public class AircraftModel {
@@ -16,10 +17,13 @@ public class AircraftModel {
 	private String description;
 	private int introductionYear;
 	private Date firstFlight;
-	public int numberBuilt;
- 	public String nationalOrigin;
-	public String fact;
-	public String role;
+	private int numberBuilt;
+ 	private String nationalOrigin;
+	private String fact;
+	private String role;
+	
+	// List
+	private ArrayList<AircraftModel> aircrafts;
 	
 	protected AircraftModel() {
 		manufacturer = "";
@@ -112,6 +116,15 @@ public class AircraftModel {
 	
 	public void setRole(String role) {
 		this.role = Enum.valueOf(Role.class, role).toString();
+	}
+	
+	// Aircrafts
+	public ArrayList<AircraftModel> getAircrafts() {
+	    return aircrafts;
+	}
+	
+	public void setAircrafts(ArrayList<AircraftModel> aircrafts) {
+		this.aircrafts = aircrafts;
 	}
    
 }
